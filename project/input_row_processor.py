@@ -23,7 +23,7 @@ class InputRowProcessor:
                     "user_id": row[1],
                     "action": row[2],
                     "item": row[3],
-                    "reserve_price": row[4],
+                    "reserve_price": float(row[4]),
                     "close_time": int(row[5]),
                 },
             )
@@ -36,7 +36,7 @@ class InputRowProcessor:
                     "user_id": row[1],
                     "action": row[2],
                     "item": row[3],
-                    "bid_amount": row[4],
+                    "bid_amount": float(row[4]),
                 },
             )
 

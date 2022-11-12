@@ -56,6 +56,10 @@ class AuctionProcessor:
             close_time=order["close_time"],
             reserve_price=order["reserve_price"],
         )
+        # Acting like the auction house bid
+        self.bid_order_registry[order["item"]] = dict(
+            current_highest_bid=order["reserve_price"],
+        )
 
     def _validate_bid(self, current_time, bid: dict) -> bool:
         # FIXME return type
