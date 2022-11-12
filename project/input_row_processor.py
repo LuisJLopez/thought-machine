@@ -14,17 +14,17 @@ class InputRowProcessor:
         row_type: str = self._get_row_type(row)
 
         if InputType.HEARTBEAT.name == row_type:
-            return InputType.HEARTBEAT.name, {"timestamp": row[0]}
+            return InputType.HEARTBEAT.name, {"timestamp": int(row[0])}
         elif InputType.SELL.name == row_type:
             return (
                 InputType.SELL.name,
                 {
-                    "timestamp": row[0],
+                    "timestamp": int(row[0]),
                     "user_id": row[1],
                     "action": row[2],
                     "item": row[3],
                     "reserve_price": row[4],
-                    "close_time ": row[5],
+                    "close_time": int(row[5]),
                 },
             )
 
@@ -32,7 +32,7 @@ class InputRowProcessor:
             return (
                 InputType.BID.name,
                 {
-                    "timestamp": row[0],
+                    "timestamp": int(row[0]),
                     "user_id": row[1],
                     "action": row[2],
                     "item": row[3],
