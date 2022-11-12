@@ -64,6 +64,10 @@ class AuctionProcessor:
             - update bid order registry with latest data for future data aggregation
         """
 
+        # ignore when bid is done before sell is live
+        if bid["item"] not in self.sell_registry.keys():
+            return
+
         sell_order: dict = self.sell_registry[bid["item"]]
         current_highest_big: float = self.bid_registry[bid["item"]]["highest_bid"]
         new_bid_amount: float = bid["bid_amount"]
