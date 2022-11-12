@@ -1,46 +1,47 @@
-from typing import Tuple
+from typing import List
+from constants import StatusEnum
 
 
 class OutputRowProcessor:
     """_summary_"""
 
-    def __init__(self) -> None:
-        # self.store = []
-        pass
+    def process_output(self, sales_data, bids_data) -> List[str]:
+        """_summary_
 
-    def aggregate_order_book(self, bid_data, sell_data):
-        # """Record the order book for output purposes"""
-        # output_store = []
+        Args:
+            sales_data (_type_): _description_
+            bids_data (_type_): _description_
 
-        # print("bid", bid_data)
-        # print("sell", sell_data)
-        # for item in sell_data:
+        Returns:
+            List[str]: _description_
+        """
+        results: List[str] = []
 
-        #         dict(
-        #             item=item,
-        #             # user_id=item,
-        #             # status=item,
-        #             # price_paid=item,
-        #             # total_bid_count=item,
-        #             # highest_bid=item,
-        #             # lowest_bid=item,
-        #         )
-        #     )
-        pass
+        for item, v in sales_data.items():
+            close_time: int = v.get("close_time")
+            highest_bid: float = self._format(bids_data[item]["highest_bid"])
+            is_sold = (
+                StatusEnum.SOLD.name
+                if highest_bid > self._format(sales_data[item]["reserve_price"])
+                else StatusEnum.UNSOLD.name
+            )
+            highest_bidder: str = (
+                bids_data[item]["highest_bidder"]
+                if is_sold == StatusEnum.SOLD.name
+                else ""
+            )
+            bid_count: int = bids_data[item]["valid_bid_counter"]
+            lowest_bid: float = self._format(bids_data[item]["lowest_bid"])
+            price_paid: float = (
+                self._format(0.00)
+                if is_sold == StatusEnum.UNSOLD.name
+                else self._format(float(highest_bid) - float(lowest_bid))
+            )
 
-    def format_output(self) -> str:
-        # data = self.store
-        # return ""
-        pass
+            results.append(
+                f"{close_time}|{item}|{highest_bidder}|{is_sold}|{price_paid}|{bid_count}|{highest_bid}|{lowest_bid}"
+            )
+        return results
 
-        # item
-        # user_id
-        # status
-        # price_paid
-        # total_bid_count
-        # highest_bid
-        # lowest_bid
-        # 20|toaster_1|8|SOLD|12.50|3|20.00|7.50
-        # 20|tv_1||UNSOLD|0.00|2|200.00|150.00
-        # |{data["item"]}"
-        # {data["user_id"]}|{data["status"]}|{data["price_paid"]}|{data["number"]}|{data["total_bid_count"]}|{data["highest_bid"]}|{data["lowest_bid"]}"
+    def _format(self, string: str) -> str:
+        return "{:.2f}".format(string)

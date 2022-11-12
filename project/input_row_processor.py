@@ -41,8 +41,8 @@ class InputRowProcessor:
             )
 
         else:
-            # Input row is not recognised, don't process it
-            pass
+            # input row is not recognised - don't process it
+            return
 
     def _get_row_type(self, input_row: list) -> str:
         if len(input_row) == 1:

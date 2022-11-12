@@ -5,7 +5,7 @@ from constants import SIXTEEN_MB_IN_BINARY_BYTES, InputType
 
 
 class AuctionProcessor:
-    """Auction House"""
+    """The Auction House"""
 
     def __init__(
         self,
@@ -13,46 +13,43 @@ class AuctionProcessor:
         input_row_processor: InputRowProcessor,
         output_row_processor: OutputRowProcessor,
     ) -> None:
-        # review if storing all of this here is ok
-        self.input_file = input_file
-        self.input_row_processor = input_row_processor
-        self.output_row_processor = output_row_processor
-        self.buffer_capacity = SIXTEEN_MB_IN_BINARY_BYTES
-        self.sell_order_registry = dict()
-        self.bid_order_registry = dict()
+        self.input_file: str = input_file
+        self.input_row_processor: InputRowProcessor = input_row_processor
+        self.output_row_processor: OutputRowProcessor = output_row_processor
+        self.buffer_capacity: int = SIXTEEN_MB_IN_BINARY_BYTES
+        self.sell_registry: dict = dict()
+        self.bid_registry: dict = dict()
 
-    def process(self):
-        # FIXME RETURN TYPE
+    def process(self) -> List[str]:
         input_row_processor: InputRowProcessor = self.input_row_processor()
-        output_row_processor: OutputRowProcessor = self.output_row_processor()
 
-        # process one line at a time - don't load everything into memory!
-        # 16MB buffer for quicker file operations
-        # assuming we aren't CPU limited but rather I/O limited
+        # assuming we aren't CPU limited but rather I/O limited - faster file operations
         with open(self.input_file, "r", buffering=self.buffer_capacity) as rows:
+            # process one line at a time - avoiding loading everything into memory
             for row in rows:
-
                 row_type, parsed_input = input_row_processor.parse_input_row(row)
 
                 if row_type == InputType.SELL.name:
                     self._store_sell_orders(parsed_input)
 
-                # make sure you invalid bids before sales
-                # invalid bids before sales
                 if row_type == InputType.BID.name:
-                    if valid_bid := self._validate_bid(parsed_input):
-                        self._process_bid(valid_bid)
+                    self._process_bid(parsed_input)
 
-        return self._process_output()
+        output_row_processor: OutputRowProcessor = self.output_row_processor()
+
+        return output_row_processor.process_output(
+            self.sell_registry, self.bid_registry
+        )
 
     def _store_sell_orders(self, order: dict) -> None:
-        self.sell_order_registry[order["item"]] = dict(
+        # keep sell registry updated with all sell orders
+        self.sell_registry[order["item"]] = dict(
             opening=order["timestamp"],
             close_time=order["close_time"],
             reserve_price=order["reserve_price"],
         )
-        # Acting like the auction house bid
-        self.bid_order_registry[order["item"]] = dict(
+        # add bid registery sekelton
+        self.bid_registry[order["item"]] = dict(
             reserve_price=order["reserve_price"],
             highest_bid=0.00,  # fix this magical float number
             highest_bidder="",
@@ -60,72 +57,32 @@ class AuctionProcessor:
             valid_bid_counter=0,
         )
 
-    def _validate_bid(self, bid: dict) -> bool:
-        # FIXME return type
-        # Should I rename this to process bid?
-        # when did the sell started?
-        # check in self.sell_time
+    def _process_bid(self, bid: dict) -> None:
+        """
+        Responsabilities:
+            - validate bids
+            - update bid order registry with latest data for future data aggregation
+        """
 
-        # Validating the bid happens after SELL before CLOSE tie
-        # get the sell order we are bidding for and check if valid
-
-        sell_order: dict = self.sell_order_registry[bid["item"]]
-        current_highest_big: float = self.bid_order_registry[bid["item"]]["highest_bid"]
+        sell_order: dict = self.sell_registry[bid["item"]]
+        current_highest_big: float = self.bid_registry[bid["item"]]["highest_bid"]
         new_bid_amount: float = bid["bid_amount"]
 
-        # add a test for this logic
-        ## if we have a higher bid, above reserve_price, within the time correct frames
+        # bid validation
         if (
             sell_order["opening"] < bid.get("timestamp") <= sell_order["close_time"]
         ) and (new_bid_amount > current_highest_big):
-            # Your bid is valid
-            return bid
 
-        return False
+            bid_details: dict = self.bid_registry[bid["item"]]
+            current_bid_counter: int = bid_details["valid_bid_counter"]
 
-    def _process_bid(self, bid: dict) -> None:
-        # WE ASSUME THERE IS ALREADY A SALE
-        #  AND ALL BIDS ARE VALID == new highest bid
-        # aggregate data while running - update counters
-        bid_details = self.bid_order_registry[bid["item"]]
-        current_bid_counter: int = bid_details["valid_bid_counter"]
-
-        # update bid store
-        self.bid_order_registry[bid["item"]].update(
-            highest_bid=bid["bid_amount"],
-            highest_bidder=bid["user_id"],
-            valid_bid_counter=current_bid_counter + 1,
-        )
-        # only update bid store with lowest bid when the bid is lower
-        if bid["bid_amount"] < bid_details["lowest_bid"]:
-            self.bid_order_registry[bid["item"]].update(lowest_bid=bid["bid_amount"])
-
-    def _process_output(self):
-        results: List[str] = []
-        sales: dict = self.sell_order_registry
-        bids: dict = self.bid_order_registry
-        for item, v in sales.items():
-            close_time: int = v.get("close_time")
-            highest_bid: float = "{:.2f}".format(bids[item]["highest_bid"])
-            is_sold = (
-                "SOLD"
-                if highest_bid > "{:.2f}".format(sales[item]["reserve_price"])
-                else "UNSOLD"
-            )
-            highest_bidder: str = (
-                bids[item]["highest_bidder"] if is_sold == "SOLD" else ""
-            )
-            bid_count: int = bids[item]["valid_bid_counter"]
-            lowest_bid: float = "{:.2f}".format(bids[item]["lowest_bid"])
-            price_paid: float = (
-                "{:.2f}".format(0.00)
-                if is_sold == "UNSOLD"
-                else "{:.2f}".format(float(highest_bid) - float(lowest_bid))
+            # update bid registry with validated bid
+            self.bid_registry[bid["item"]].update(
+                highest_bid=bid["bid_amount"],
+                highest_bidder=bid["user_id"],
+                valid_bid_counter=current_bid_counter + 1,
             )
 
-            results.append(
-                f"{close_time}|{item}|{highest_bidder}|{is_sold}|{price_paid}|{bid_count}|{highest_bid}|{lowest_bid}"
-            )
-        return results
-        # 20|toaster_1|8|SOLD|12.50|3|20.00|7.50
-        # 20|tv_1||UNSOLD|0.00     |2|200.00|150.00
+            # only update bid registry whith lowest bid
+            if bid["bid_amount"] < bid_details["lowest_bid"]:
+                self.bid_registry[bid["item"]].update(lowest_bid=bid["bid_amount"])
