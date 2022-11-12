@@ -1,3 +1,4 @@
+from typing import List
 from input_row_processor import InputRowProcessor
 from output_row_processor import OutputRowProcessor
 from constants import SIXTEEN_MB_IN_BINARY_BYTES, InputType
@@ -100,9 +101,9 @@ class AuctionProcessor:
             self.bid_order_registry[bid["item"]].update(lowest_bid=bid["bid_amount"])
 
     def _process_output(self):
+        results: List[str] = []
         sales: dict = self.sell_order_registry
         bids: dict = self.bid_order_registry
-
         for item, v in sales.items():
             close_time: int = v.get("close_time")
             highest_bid: float = "{:.2f}".format(bids[item]["highest_bid"])
@@ -122,8 +123,9 @@ class AuctionProcessor:
                 else "{:.2f}".format(float(highest_bid) - float(lowest_bid))
             )
 
-            print(
+            results.append(
                 f"{close_time}|{item}|{highest_bidder}|{is_sold}|{price_paid}|{bid_count}|{highest_bid}|{lowest_bid}"
             )
+        return results
         # 20|toaster_1|8|SOLD|12.50|3|20.00|7.50
         # 20|tv_1||UNSOLD|0.00     |2|200.00|150.00
