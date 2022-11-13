@@ -13,6 +13,8 @@ How to run
 $ python project inputs/input.txt
 ```
 
+![python](images/python.png)
+
 If you don't have python v3.9.5 installed but you have docker, run this cmd:
 
 ```
