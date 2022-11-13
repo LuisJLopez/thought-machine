@@ -15,8 +15,8 @@ def main():
         input_file, InputRowProcessor, OutputRowProcessor
     )
 
-    # output
-    [print(i) for i in auction_processor.process()]
+    # output stdout
+    [print(result, file=sys.stdout) for result in auction_processor.process()]
 
 
 if __name__ == "__main__":
