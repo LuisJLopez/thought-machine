@@ -4,7 +4,7 @@ from constants import InputType
 
 class InputRowProcessor:
     """
-    This class is reponsible for categorising and parsing lines
+    This class is reponsible for categorising and parsing input lines
     into a more meaningful data structures for easier manipulation.
     """
 

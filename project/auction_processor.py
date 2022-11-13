@@ -12,7 +12,6 @@ class AuctionProcessor:
     """
 
     def __init__(
-        # """A class to represent the auction house"""
         self,
         input_file: str,
         input_row_processor: InputRowProcessor,
@@ -40,6 +39,7 @@ class AuctionProcessor:
                 if row_type == InputType.BID.name:
                     self._process_bid(parsed_input)
 
+        # once the auction has finished
         output_row_processor: OutputRowProcessor = self.output_row_processor()
 
         return output_row_processor.process_output(
@@ -47,13 +47,13 @@ class AuctionProcessor:
         )
 
     def _store_sell_orders(self, sell_order: dict) -> None:
-        # keep sell registry updated with all sell orders
+        # keep sell registry updated with sell orders
         self.sell_registry[sell_order["item"]] = dict(
             opening=sell_order["timestamp"],
             close_time=sell_order["close_time"],
             reserve_price=sell_order["reserve_price"],
         )
-        # add bid registery sekelton
+        # default/skeleton bid registery linked to a sell order
         self.bid_registry[sell_order["item"]] = dict(
             reserve_price=sell_order["reserve_price"],
             highest_bid=ZERO_FLOAT,
@@ -62,27 +62,29 @@ class AuctionProcessor:
         )
 
     def _process_bid(self, bid: dict) -> None:
+        item: dict = bid["item"]
+
         # ignore if bid happens before sell is live
-        if bid["item"] not in self.sell_registry.keys():
+        if item not in self.sell_registry.keys():
             return
 
         # bid validation
-        sell_order: dict = self.sell_registry[bid["item"]]
-        current_highest_big: float = self.bid_registry[bid["item"]]["highest_bid"]
+        sell_order: dict = self.sell_registry[item]
+        current_highest_big: float = self.bid_registry[item]["highest_bid"]
         new_bid_amount: float = bid["bid_amount"]
 
         if (
             sell_order["opening"] < bid.get("timestamp") <= sell_order["close_time"]
         ) and (new_bid_amount > current_highest_big):
 
-            bid_details: dict = self.bid_registry[bid["item"]]
+            bid_details: dict = self.bid_registry[item]
             current_bid_counter: int = bid_details["valid_bid_counter"]
 
             # store second highest bid before new highest bid update
-            second_highest_bidder = self.bid_registry[bid["item"]].get("highest_bid")
+            second_highest_bidder = bid_details.get("highest_bid")
 
             # update bid registry with validated bid
-            self.bid_registry[bid["item"]].update(
+            self.bid_registry[item].update(
                 highest_bid=new_bid_amount,
                 second_highest_bid=second_highest_bidder,
                 highest_bidder=bid["user_id"],
@@ -92,6 +94,6 @@ class AuctionProcessor:
             # only update bid registry whith lowest_bid or if lowest_bid hasn't been set
             if (
                 "lowest_bid" not in bid_details.keys()
-                or bid["bid_amount"] < bid_details["lowest_bid"]
+                or new_bid_amount < bid_details["lowest_bid"]
             ):
-                self.bid_registry[bid["item"]].update(lowest_bid=bid["bid_amount"])
+                self.bid_registry[item].update(lowest_bid=new_bid_amount)
