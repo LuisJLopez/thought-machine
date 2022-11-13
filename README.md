@@ -8,13 +8,23 @@ I assume a BID on an Item which is not higher than the current bid price or rese
 
 
 How to run 
+
 ```
 $ python project inputs/input.txt
 ```
 
-if you don't have python 3.9.5 but you have docker, run this cmd:
+If you don't have python v3.9.5 installed but you have docker, run this cmd:
 
 ```
 $ docker build -t thought-machine . && docker run thought-machine 
 ```
 
+![docker](images/docker.png)
+
+How to run tests
+
+```
+$ pytest
+```
+
+![pytest](images/pytest.png)
