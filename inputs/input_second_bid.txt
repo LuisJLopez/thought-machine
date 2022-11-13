@@ -1,0 +1,2 @@
+15|1|SELL|toaster_1|1000|20
+16|2|BID|toaster_1|2000

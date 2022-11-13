@@ -43,7 +43,8 @@ class OutputRowProcessor:
                 and second_highest_bid < reserve_price
                 else self._decimal_format(float(bids_data[item]["second_highest_bid"]))
             )
-
+            if bid_count == 1:
+                price_paid = reserve_price
             # output string
             results.append(
                 f"{close_time}|{item}|{highest_bidder}|{is_sold}|{price_paid}|{bid_count}|{highest_bid}|{lowest_bid}"

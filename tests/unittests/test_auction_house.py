@@ -35,7 +35,9 @@ class AuctionHouseTestCase(TestCase):
             ],
         )
 
-    def test_bid_during_close_pass(self):
+    def test_bid_on_close_pass(self):
+        # bid on close is valid
+        # only one bid = winner = price to pay is reserve price
         provided_input_file = "inputs/input_bid_after_close.txt"
 
         auction_processor: AuctionProcessor = AuctionProcessor(
@@ -45,7 +47,7 @@ class AuctionHouseTestCase(TestCase):
         self.assertEqual(
             results,
             [
-                "20|toaster_1|8|SOLD|0.00|1|22.00|22.00",
+                "20|toaster_1|8|SOLD|10.00|1|22.00|22.00",
             ],
         )
 
@@ -68,16 +70,33 @@ class AuctionHouseTestCase(TestCase):
         )
 
     def test_multiple_bidders_pass(self):
+        # first highest bidder is the winner
+        # also if there is only one bidder - reserve price is the paid price
         provided_input_file = "inputs/input_multiple_bidders.txt"
 
         auction_processor: AuctionProcessor = AuctionProcessor(
             provided_input_file, InputRowProcessor, OutputRowProcessor
         )
         results = auction_processor.process()
-        # first bidder take the item - even if other bidders make the same bid
         self.assertEqual(
             results,
             [
-                "20|toaster_1|2|SOLD|0.00|1|22.00|22.00",
+                "20|toaster_1|2|SOLD|11.11|1|22.00|22.00",
+            ],
+        )
+
+    def test_second_highest_bid_pass(self):
+        # second biggest bid is the price to pay
+        # if SOLD and there is 1 valid bid - then reserve price else 0.00
+        provided_input_file = "inputs/input_second_bid.txt"
+
+        auction_processor: AuctionProcessor = AuctionProcessor(
+            provided_input_file, InputRowProcessor, OutputRowProcessor
+        )
+        results = auction_processor.process()
+        self.assertEqual(
+            results,
+            [
+                "20|toaster_1|2|SOLD|1000.00|1|2000.00|2000.00",
             ],
         )
