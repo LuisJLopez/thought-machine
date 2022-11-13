@@ -9,5 +9,15 @@ I assume a BID on an Item which is not higher than the current bid price or rese
 
 How to run 
 ```
-S python project inputs/input.txt
+$ python project inputs/input.txt
 ```
+
+if you don't have python 3.9.5 but you have docker, run with these two cmds:
+
+```
+$ docker build -t thought-machine .
+```
+```
+$ docker run thought-machine 
+```
+

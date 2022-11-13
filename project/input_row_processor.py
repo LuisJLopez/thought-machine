@@ -3,13 +3,9 @@ from constants import InputType
 
 
 class InputRowProcessor:
-    """_summary_"""
-
-    def __init__(self) -> None:
-        pass
+    """A class to represent a"""
 
     def parse_input_row(self, row: str) -> Tuple[InputType, dict]:
-
         row = row.rstrip("\n").split("|")
         row_type: str = self._get_row_type(row)
 

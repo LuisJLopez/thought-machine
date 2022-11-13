@@ -1,13 +1,13 @@
 from typing import List
+
+from constants import SIXTEEN_MB_IN_BINARY_BYTES, ZERO_FLOAT, ZERO_INT, InputType
 from input_row_processor import InputRowProcessor
 from output_row_processor import OutputRowProcessor
-from constants import SIXTEEN_MB_IN_BINARY_BYTES, InputType
 
 
 class AuctionProcessor:
-    """The Auction House"""
-
     def __init__(
+        # """A class to represent the auction house"""
         self,
         input_file: str,
         input_row_processor: InputRowProcessor,
@@ -41,20 +41,19 @@ class AuctionProcessor:
             self.sell_registry, self.bid_registry
         )
 
-    def _store_sell_orders(self, order: dict) -> None:
+    def _store_sell_orders(self, sell_order: dict) -> None:
         # keep sell registry updated with all sell orders
-        self.sell_registry[order["item"]] = dict(
-            opening=order["timestamp"],
-            close_time=order["close_time"],
-            reserve_price=order["reserve_price"],
+        self.sell_registry[sell_order["item"]] = dict(
+            opening=sell_order["timestamp"],
+            close_time=sell_order["close_time"],
+            reserve_price=sell_order["reserve_price"],
         )
         # add bid registery sekelton
-        self.bid_registry[order["item"]] = dict(
-            reserve_price=order["reserve_price"],
-            highest_bid=0.00,  # fix this magical float number
-            highest_bidder="",
-            lowest_bid=980989080989080.00,  # remove magic default number DEFAULT
-            valid_bid_counter=0,
+        self.bid_registry[sell_order["item"]] = dict(
+            reserve_price=sell_order["reserve_price"],
+            highest_bid=ZERO_FLOAT,  # fix this magical float number
+            highest_bidder="",  # remove magic default number DEFAULT
+            valid_bid_counter=ZERO_INT,
         )
 
     def _process_bid(self, bid: dict) -> None:
@@ -87,6 +86,9 @@ class AuctionProcessor:
                 valid_bid_counter=current_bid_counter + 1,
             )
 
-            # only update bid registry whith lowest bid
-            if bid["bid_amount"] < bid_details["lowest_bid"]:
+            # only update bid registry whith lowest bid or if there is not lowest bid
+            if (
+                "lowest_bid" not in bid_details.keys()
+                or bid["bid_amount"] < bid_details["lowest_bid"]
+            ):
                 self.bid_registry[bid["item"]].update(lowest_bid=bid["bid_amount"])

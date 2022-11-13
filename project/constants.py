@@ -12,4 +12,7 @@ class StatusEnum(Enum):
     UNSOLD: str = auto()
 
 
+# avoiding magic numbers
+ZERO_INT: int = 0
+ZERO_FLOAT: float = 0.0
 SIXTEEN_MB_IN_BINARY_BYTES: int = 16777216  # 16MB
