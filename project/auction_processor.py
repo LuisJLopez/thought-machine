@@ -78,9 +78,13 @@ class AuctionProcessor:
             bid_details: dict = self.bid_registry[bid["item"]]
             current_bid_counter: int = bid_details["valid_bid_counter"]
 
+            # store second highest bid before new highest bid update
+            second_highest_bidder = self.bid_registry[bid["item"]].get("highest_bid")
+
             # update bid registry with validated bid
             self.bid_registry[bid["item"]].update(
-                highest_bid=bid["bid_amount"],
+                highest_bid=new_bid_amount,
+                second_highest_bid=second_highest_bidder,
                 highest_bidder=bid["user_id"],
                 valid_bid_counter=current_bid_counter + 1,
             )

@@ -31,7 +31,7 @@ class AuctionHouseTestCase(TestCase):
         self.assertEqual(
             results,
             [
-                "20|toaster_1|8|SOLD|14.72|5|22.22|7.50",
+                "20|toaster_1|8|SOLD|20.01|5|22.22|7.50",
             ],
         )
 
@@ -63,7 +63,7 @@ class AuctionHouseTestCase(TestCase):
                 "7|fridge_1||UNSOLD|0.00|0|0.00|0.00",
                 "20|coffee_machine_1||UNSOLD|0.00|0|0.00|0.00",
                 "20|toaster_1|8|SOLD|12.50|3|20.00|7.50",
-                "22|tv_1|3|SOLD|150.00|3|300.00|150.00",
+                "22|tv_1|3|SOLD|200.00|3|300.00|150.00",
             ],
         )
 

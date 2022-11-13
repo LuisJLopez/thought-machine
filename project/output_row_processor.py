@@ -15,10 +15,11 @@ class OutputRowProcessor:
         for item, v in sales_data.items():
             close_time: int = v.get("close_time")
             highest_bid: float = self._decimal_format(bids_data[item]["highest_bid"])
+            reserve_price = self._decimal_format(sales_data[item]["reserve_price"])
             # determine if item has been sold
             is_sold = (
                 StatusEnum.SOLD.name
-                if highest_bid > self._decimal_format(sales_data[item]["reserve_price"])
+                if highest_bid > reserve_price
                 else StatusEnum.UNSOLD.name
             )
             # determine highest bidder
@@ -31,11 +32,16 @@ class OutputRowProcessor:
             lowest_bid: float = self._decimal_format(
                 bids_data[item].get("lowest_bid", ZERO_FLOAT)
             )
+            second_highest_bid = self._decimal_format(
+                float(bids_data[item].get("second_highest_bid", ZERO_FLOAT))
+            )
+
             # determine the price paid
             price_paid: float = (
                 self._decimal_format(ZERO_FLOAT)
                 if is_sold == StatusEnum.UNSOLD.name
-                else self._decimal_format(float(highest_bid) - float(lowest_bid))
+                and second_highest_bid < reserve_price
+                else self._decimal_format(float(bids_data[item]["second_highest_bid"]))
             )
 
             # output string
