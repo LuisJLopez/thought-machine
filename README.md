@@ -12,12 +12,9 @@ How to run
 $ python project inputs/input.txt
 ```
 
-if you don't have python 3.9.5 but you have docker, run with these two cmds:
+if you don't have python 3.9.5 but you have docker, run this cmd:
 
 ```
-$ docker build -t thought-machine .
-```
-```
-$ docker run thought-machine 
+$ docker build -t thought-machine . && docker run thought-machine 
 ```
 
