@@ -6,6 +6,11 @@ from output_row_processor import OutputRowProcessor
 
 
 class AuctionProcessor:
+    """
+    A representation of an auction house with the responsability of
+    processing sell orders and bids.
+    """
+
     def __init__(
         # """A class to represent the auction house"""
         self,
@@ -51,27 +56,21 @@ class AuctionProcessor:
         # add bid registery sekelton
         self.bid_registry[sell_order["item"]] = dict(
             reserve_price=sell_order["reserve_price"],
-            highest_bid=ZERO_FLOAT,  # fix this magical float number
-            highest_bidder="",  # remove magic default number DEFAULT
+            highest_bid=ZERO_FLOAT,
+            highest_bidder="",
             valid_bid_counter=ZERO_INT,
         )
 
     def _process_bid(self, bid: dict) -> None:
-        """
-        Responsabilities:
-            - validate bids
-            - update bid order registry with latest data for future data aggregation
-        """
-
-        # ignore when bid is done before sell is live
+        # ignore if bid happens before sell is live
         if bid["item"] not in self.sell_registry.keys():
             return
 
+        # bid validation
         sell_order: dict = self.sell_registry[bid["item"]]
         current_highest_big: float = self.bid_registry[bid["item"]]["highest_bid"]
         new_bid_amount: float = bid["bid_amount"]
 
-        # bid validation
         if (
             sell_order["opening"] < bid.get("timestamp") <= sell_order["close_time"]
         ) and (new_bid_amount > current_highest_big):
@@ -86,7 +85,7 @@ class AuctionProcessor:
                 valid_bid_counter=current_bid_counter + 1,
             )
 
-            # only update bid registry whith lowest bid or if there is not lowest bid
+            # only update bid registry whith lowest_bid or if lowest_bid hasn't been set
             if (
                 "lowest_bid" not in bid_details.keys()
                 or bid["bid_amount"] < bid_details["lowest_bid"]

@@ -3,7 +3,10 @@ from constants import InputType
 
 
 class InputRowProcessor:
-    """A class to represent a"""
+    """
+    This class is reponsible for categorising and parsing lines
+    into a more meaningful data structures for easier manipulation.
+    """
 
     def parse_input_row(self, row: str) -> Tuple[InputType, dict]:
         row = row.rstrip("\n").split("|")
@@ -16,31 +19,30 @@ class InputRowProcessor:
                 InputType.SELL.name,
                 {
                     "timestamp": int(row[0]),
-                    "user_id": row[1],
-                    "action": row[2],
-                    "item": row[3],
+                    "user_id": str(row[1]),
+                    "action": str(row[2]),
+                    "item": str(row[3]),
                     "reserve_price": float(row[4]),
                     "close_time": int(row[5]),
                 },
             )
-
         elif InputType.BID.name == row_type:
             return (
                 InputType.BID.name,
                 {
                     "timestamp": int(row[0]),
-                    "user_id": row[1],
-                    "action": row[2],
-                    "item": row[3],
+                    "user_id": int(row[1]),
+                    "action": str(row[2]),
+                    "item": str(row[3]),
                     "bid_amount": float(row[4]),
                 },
             )
-
         else:
             # input row is not recognised - don't process it
             return
 
     def _get_row_type(self, input_row: list) -> str:
+        # categorise input row
         if len(input_row) == 1:
             return InputType.HEARTBEAT.name
         if input_row[2] == InputType.SELL.name:
