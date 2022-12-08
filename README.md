@@ -1,4 +1,4 @@
-# Thought Machine - Auction House
+# Auction House
 
 ### Useful links:
 - [Project entrypoint](/project/__main__.py)
